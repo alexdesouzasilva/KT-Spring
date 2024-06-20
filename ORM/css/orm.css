@@ -1,0 +1,19 @@
+.container {
+    display: flex;
+}
+
+.box-1 {
+    width: 50%;
+    padding: 20px;
+    background-color: lightblue;
+    border: 1px solid #000;
+    box-sizing: border-box;
+}
+
+.box-2 {
+    width: 50%;
+    padding: 20px;
+    background-color: antiquewhite;
+    border: 1px solid #000;
+    box-sizing: border-box;
+}

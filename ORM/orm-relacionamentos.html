@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>ORM</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/orm.css">
+    </head>
+    <body>
+        <h1>Modelo de Domínio e ORM</h1>
+
+        <div>
+            <h3>Entities</h3>
+            <ul>
+                <li>User</li>
+                <li>Order</li>
+                <li>Payment</li>
+                <li>OrderItem + OrderItemPK</li>
+                <li>Product</li>
+                <li>Category</li>
+            </ul>
+        </div>
+        <hr>
+
+        <div>
+            <h3>Modelagem: </h3>
+            <img src="./imagens/modelagem.PNG">
+        </div>
+        <hr>
+
+        <div>
+            <h3>Relacionamento 1 Para Muitos (User x Order): </h3>
+            <span>Ou seja, um user poderá ter muitas orders (pedidos)</span>
+            <div class="container">
+                <div class="box-1">
+                    <h3>Configurações Classe User: </h3>
+                    <span>
+                        @OneToMany(mappedBy = "user") ** <i>Mapeado pelo atributo user da Entidade Order.</i><br>
+                        private List<Order> orders = new ArrayList<>(); <i>** Um usuário pode ter muitos pedidos, logo, orders é uma lista.</i>
+                    </span>
+
+                        
+                </div>
+                <div class="box-1">
+                    <h3>Configurações Classe Order: </h3>
+                    <span>
+                       <strong>@ManyToOne</strong> ** <i>Muitas orders (pedidos) terá um usuário</i> <br> 
+                        @JoinColumn(name = "user_id") ** <i>Criar uma coluna na tabela Order chamada user_id </i><br>
+                        private User user;
+                    </span>
+                </div>
+            </div>
+
+        </div>
+        <br>
+        <hr>
+        <div>
+            <h3>Relacionamento 1 para 0..1 (Order vs Payment) </h3>
+            <span>Ou seja, um pedido (order) poderá ter 1 ou 0 pagamento - Pedidos que não completaram pagamentos</span><br>
+            <span>Relacionamento OneToOne no qual a Entidade Payment depende de pelo menos uma order</span>
+            <div class="container">
+                <div class="box-2">
+                    <h3>Configurações Classe Order: </h3>
+                    <span>
+                        ** <i>CascadeType.ALL * Se o registro da entidade pai for excluído, o da classe filho será excluído também.</i><br>
+                        @OneToOne(mappedBy = "order", cascade = CascadeType.ALL) <i>** Mapeado order da Entidade Payment</i> <br>
+                        private Payment payment;
+                    </span>
+
+                        
+                </div>
+                <div class="box-2">
+                    <h3>Configurações Classe Payment: </h3>
+                    <span>
+                        @OneToOne<br>
+                        @MapsId ** <i>Mapeado pelo ID da Entidade Order.</i> <br>
+                        private Order order
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
