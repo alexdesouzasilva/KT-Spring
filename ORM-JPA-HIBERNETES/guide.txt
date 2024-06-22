@@ -1,0 +1,139 @@
+JPA - Java Persistence API - Especificação Java que padroniza o ORM.
+
+Hibernate - Implementação de JPA. Framework ORM robusto.
+
+Comparação:
+JPA é uma especificação, conjunto de interfaces e diretrizes, enquanto Hibernates é uma
+implementação especifica dessas interfaces.
+
+Anotações:
+    @Entity, @Table, @Id, @GeneratedValue(strategy = "GenerationType.IDENTITY"), @Column
+    @OneToOne, @ManyToOne, @OneToMany, @JoinColumn
+
+
+    @Entity: 
+        1. Registra a classe como um componente gerenciado pelo Spring. 
+        2. Especifica que a classe será uma Entidade do Banco de Dados.
+    
+    @Table(name = "tb_user"):
+        1. Nomei a Entidade que será criada no Banco de Dados.
+
+    @Id:
+        1. Define o atributo Id da Entidade.
+
+    @GeneratedValue(strategy = "GenerationType.IDENTITY")
+        1. Defina a estratégia da chave primaria. 
+
+    @Column:
+        1. Capaz de definir configurações específicas para uma coluna da Tabela.
+        2. Exemplo: O registro deverá ser unico: @Column("unique")
+
+    *** Relacionamento ***
+
+    @OneToOne:
+        1. Para relacionamentos de 1 para 1, precisamos definir qual entidade ficará com a chave estrangera.
+        2. Exemplo User vs Perfil
+
+            Entidade User:
+
+                @OneToOne(cascade = CascadeType.ALL) -> CascadeType.ALL garante que todas alterações feitas em User será propagada para Perfil.
+                @JoinColumn(name = "perfil_id") -> Especifica coluna de junção no BD. Será criado a coluna perfil_id na tabale User.
+                private Perfil perfil;
+
+            Entidade Perfil:
+
+                @OneToOne(mappedBy = "perfil") Indica que o proprietário da relação é a entidade User e a coluna será gerida pela tabela User.
+                private User user;
+
+    
+    @OneToMany/@ManyToOne:
+        1. Relacionamento 1 para * (muitos). A entidade muitos receberá a chave estrangeira.
+        2. Exemplo User vs Pedido, onde 1 user poderá ter muitos pedidos.
+
+        Entidade User:
+
+            @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+            private List<Pedido> pedidos = new ArrayList<>();
+
+            * mappedBy = "user" Relacionamento mapeado pelo atributo user na Entidade Pedido.
+            * cascade = CascadeType.ALL Alterações em User será refletida em Pedido.
+
+        Entidade Pedido:
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "user_id") Coluna de Junção, ou seja, na tabela Pedido será criada a coluna "user_id"
+            private User user;
+
+            * fetch = FetchType.LAZY Melhora o desempenho do Banco de Dados, ou seja, os Dados
+                                     serão carregados apenas quando forem acessados da primeira vez.
+
+    
+    @OneToMany/@ManyToOne
+        1. Relacionamento 1 para * (muitos). Quando *muitos* não poderá ser repetido.
+        ** Basta utilizar a Collection Set:
+        private Set<Item> items = new HashSet<>();
+
+    
+    @OneToMany/@ManyToOne
+        1. Relacionamento 1 para 0..1 
+        2. Um pedido poderá ter 0 (nenhum) pagamento ou 1 pagamento.
+
+        Entidade Pedido:
+            @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+            private Pagamento pagamento;
+
+            *optional = true: Poderá ser null caso o pagamento não seja efetivado.
+
+        Entidade Pagamento:
+            @OneToOne
+            @JoinColumn(name = "pedido_id"): Entidade pagamento receberá a coluna pedido_id
+            private Pedido pedido; 
+
+
+    @ManyToMany
+        1. Relacionamento Muitos para Muitos sem Entidade de Junção.
+        2. Exemplo: Categoria vs Produto:
+
+        Entidade Categoria:
+
+            @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+            @JoinTable(
+            name = "categoria_produto",
+            joinColumns = @JoinColumn(name = "categoria_id"),
+            inverseJoinColumns = @JoinColumn(name = "produto_id"))
+            private Set<Produto> produtos = new HashSet<>();
+
+            *@JoinTable Especifica tabela de junção para relacionamento muitos-para-muitos
+                * name: Nome da tabela de junção "categoria_produto"
+                * joinColumns = @JoinColumn(name = "categoria_id") coluna de junção entidade categoria
+                * inverseJoinColumns = @JoinColumn(name = "produto_id") coluna de junção entidade produto
+
+        Entidade Produto:
+            @ManyToMany(mappedBy = "produtos"): Relacionamento mapeado pelo atributo produtos declarado na classe Categoria.
+            private Set<Categoria> categorias = new HashSet<>();
+
+
+
+     @ManyToMany
+        1. Relacionamento Muitos para Muitos usando uma Entidade/Classe de Junção.
+        2. Exemplo: Pedido vs ItemPedido vs Produto:
+
+        Entidade Pedido:
+            @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+            private Set<ItemPedido> itens = new HashSet<>();
+
+        Entidade Produto:   
+            @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
+            private Set<ItemPedido> itens = new HashSet<>();
+
+        Entidade ItemPedido:
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "pedido_id")
+            private Pedido pedido;
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "produto_id")
+            private Produto produto;
+
+
