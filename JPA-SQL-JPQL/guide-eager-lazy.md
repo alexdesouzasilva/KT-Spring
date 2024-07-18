@@ -89,3 +89,17 @@
 
             Ou seja, realiza a busca por department e depois faz o get em employees, logo, a JPA irá efetuar nova consulta no banco de dados para trazer todos funcionários do departamento. Por tanto, a busca será realizada se de fato for necessária.
 
+## Alteração de comportamento
+
+    * Não é indicado trocar os comportamentos default LAZY e EAGER.
+    Contudo, a alteração seria na anotação de relacionamento:
+
+    @OneToMany(mappedBy = "department", fech = FechType.EAGER)
+
+## Ideal
+    
+    * Fazer consultas customizadas.
+
+    Primeira Opção - Usando Join Fech no JPQL
+    Query("SELECT obj FROM Employee obj JOIN FETCH obj.department")
+
